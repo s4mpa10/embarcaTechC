@@ -16,7 +16,7 @@ int main() {
 
     printf("Area: %.2lf \n", area);
 
-    printf("Perimetro: %.2lf", perimetro);
+    printf("Perimetro: %.2lf \n", perimetro);
 
     return 0;
 
