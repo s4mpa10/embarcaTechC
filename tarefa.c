@@ -4,7 +4,7 @@ int inverterNumero(int numero) {
     int invertido = 0, resto;
 
     while (numero != 0) {
-        resto = numero % 10;
+        resto = numero % 10;a   
         invertido = invertido * 10 + resto;
         numero /= 10;
     }
