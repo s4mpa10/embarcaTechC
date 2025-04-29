@@ -1,0 +1,147 @@
+// #include "pico/stdlib.h"
+// #include "stdio.h"
+
+// #define BUTTON_A 5    // GPIO conectado ao Botão A
+// #define BUTTON_B 6    // GPIO conectado ao Botão B
+// #define LED_PIN 11    // GPIO conectado ao LED na cor verde
+
+
+// int main() {
+
+//     gpio_init(BUTTON_A);
+//     gpio_set_dir(BUTTON_A, GPIO_IN);
+//     gpio_pull_up(BUTTON_A);
+
+    
+//     gpio_init(BUTTON_B);
+//     gpio_set_dir(BUTTON_B, GPIO_IN);
+//     gpio_pull_up(BUTTON_B);
+
+
+//     gpio_init(LED_PIN);
+//     gpio_set_dir(LED_PIN, GPIO_OUT);
+
+//     while(1){
+
+//         if (gpio_get(BUTTON_A) == 0) {
+//             gpio_put(LED_PIN, 0); 
+//         } else {
+//             gpio_put(LED_PIN, 1); 
+//         }
+//     }
+
+//     return 0;
+// }
+
+
+
+// const uint green_pin = 11; // Pino para o LED verde
+
+// // Função para atualizar os estados dos LEDs
+// void set_led_color(uint green_pin, bool G) {
+//     gpio_put(green_pin, G); // Configura o estado do LED verde
+// }
+
+// void init_button(){
+//     // Configuração do GPIO do Botão A como entrada com pull-up interno
+//     gpio_init(BUTTON_A);
+//     gpio_set_dir(BUTTON_A, GPIO_IN);
+//     gpio_pull_up(BUTTON_A);
+// }
+
+// void init_led(){
+//     gpio_init(green_pin);
+
+//     gpio_set_dir(green_pin, GPIO_OUT);
+// }
+
+// void button_desliga(int G) {
+//     if (gpio_get(BUTTON_A) == 0) { // Se o botão A estiver pressionado (LOW)
+//         G = 0; // Desliga o LED verde
+//     }
+// }
+
+// void state(){
+//     // Lê o estado do Botão A
+//     bool button_a_state = gpio_get(BUTTON_A);  // HIGH = solto, LOW = pressionado
+
+//     printf("Estado do Botão A: %s\n", button_a_state ? "Solto" : "Pressionado");    
+// }
+
+
+
+#include "pico/stdlib.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "time.h"
+
+#define BUTTON_A 5    // GPIO conectado ao Botão A
+#define BUTTON_B 6    // GPIO conectado ao Botão B
+#define LED_PIN 13    // GPIO conectado ao LED na cor vermelha
+
+// Função que aguarda de 1 a 7 segundos aleatórios antes de acender o LED
+void espera_aleatoria() {
+    int tempo_espera = (rand() % 7 + 1) * 1000;  // Gera número entre 1 e 7, em milissegundos
+    sleep_ms(tempo_espera);
+    gpio_put(LED_PIN, 1);  // Acende o LED
+    sleep_ms(200);  // Mantém o LED aceso por 200ms
+    gpio_put(LED_PIN, 0);
+}
+
+// Função que converte o tempo de milessegundos para segundos
+int tempo_reacao_button(int tempo){
+    float tempo_reacao;
+
+    tempo_reacao = tempo / 1000.0; 
+
+    return tempo_reacao;
+}
+
+
+int main() {
+    stdio_init_all();
+    srand(time_us_64());  // Inicializa a semente do gerador de números aleatórios
+
+    gpio_init(BUTTON_A);
+    gpio_set_dir(BUTTON_A, GPIO_IN);
+    gpio_pull_up(BUTTON_A);
+
+    gpio_init(BUTTON_B);
+    gpio_set_dir(BUTTON_B, GPIO_IN);
+    gpio_pull_up(BUTTON_B);
+
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
+    gpio_put(LED_PIN, 0);  // Garante que o LED comece desligado
+
+    while (1) {
+        // Se botão B for pressionado, inicia o processo
+        if (gpio_get(BUTTON_B) == 0) {
+            espera_aleatoria();
+
+            // Captura o tempo em que o LED foi aceso
+            absolute_time_t inicio_reacao = get_absolute_time();
+
+            // Aguarda o botão A ser pressionado (tempo de reação)
+            while (gpio_get(BUTTON_A) != 0) {
+                tight_loop_contents();  // Aguarda ocupando pouco a CPU
+            }
+
+            // Captura o tempo de reação e calcula o intervalo
+            absolute_time_t fim_reacao = get_absolute_time();
+            int64_t tempo_reacao = absolute_time_diff_us(inicio_reacao, fim_reacao) / 1000;  // Em milissegundos
+
+            gpio_put(LED_PIN, 0);  // Desliga o LED
+
+            printf("Tempo de reação em milisegundos: %lld ms\n", tempo_reacao);
+            printf("Tempo de reação em segundos: %.3f s\n", tempo_reacao_button(tempo_reacao));
+
+            // Aguarda o botão A ser solto antes de permitir nova rodada
+            while (gpio_get(BUTTON_A) == 0) {
+                sleep_ms(10);
+            }
+        }
+    }
+
+    return 0;
+}
