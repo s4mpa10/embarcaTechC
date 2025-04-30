@@ -35,10 +35,13 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(projeto_reflexo projeto_reflexo.c )
+add_executable(projeto_reflexo projeto_reflexo.c inc/ssd1306_i2c.c)
 
 pico_set_program_name(projeto_reflexo "projeto_reflexo")
 pico_set_program_version(projeto_reflexo "0.1")
+
+# Generate PIO header
+pico_generate_pio_header(projeto_reflexo ${CMAKE_CURRENT_LIST_DIR}/ws2812b.pio)
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(projeto_reflexo 0)
@@ -56,6 +59,9 @@ target_include_directories(projeto_reflexo PRIVATE
 # Add any user requested libraries
 target_link_libraries(projeto_reflexo 
         pico_cyw43_arch_none
+        hardware_i2c
+        hardware_pio
+        hardware_clocks
         )
 
 pico_add_extra_outputs(projeto_reflexo)
