@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unidade 02 - Tarefa 2 - Joystick</title>
+<style>
+    body {
+        background: #222;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .rosa-dos-ventos {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        background: #333;
+        border: 2px solid #555;
+        border-radius: 50%;
+    }
+    .seta {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-left: 25px solid transparent;
+        border-right: 25px solid transparent;
+        border-bottom: 50px solid red;
+        transform-origin: bottom center;
+        transform: translate(-50%, -100%) rotate(0deg);
+        transition: transform 0.2s ease;
+        pointer-events: none;
+    }
+    .ponto {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform-origin: center center;
+    }
+    .direcao-label {
+        position: absolute;
+        font-size: 0.85rem;
+        color: #fff;
+        text-align: center;
+        width: 50px;
+        transform-origin: center center;
+    }
+    #direcao {
+        margin-top: 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: 2px solid #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+</style>
+</head>
+<body>
+
+<h1>Unidade 02 - Tarefa 2 - Joystick - Rosa dos Ventos - Alan Alexandre Sampaio</h1>
+<div class="rosa-dos-ventos" id="rosa">
+    <div id="seta" class="seta"></div>
+</div>
+<div id="direcao">Norte (0°)</div>
+
+<script>
+    const rosa = document.getElementById('rosa');
+    const seta = document.getElementById('seta');
+    const direcaoTexto = document.getElementById('direcao');
+
+    // Lista dos 32 rumos
+    const direcoes = [
+        { nome: "N", nomeCompleto: "Norte", angulo: 0 },
+        { nome: "NNE", nomeCompleto: "Norte-Nordeste", angulo: 22.5 },
+        { nome: "NE", nomeCompleto: "Nordeste", angulo: 45 },
+        { nome: "ENE", nomeCompleto: "Este-Nordeste", angulo: 67.5 },
+        { nome: "L", nomeCompleto: "Leste", angulo: 90 },
+        { nome: "ESE", nomeCompleto: "Este-Sudeste", angulo: 112.5 },
+        { nome: "SE", nomeCompleto: "Sudeste", angulo: 135 },
+        { nome: "SSE", nomeCompleto: "Sul-Sudeste", angulo: 157.5 },
+        { nome: "S", nomeCompleto: "Sul", angulo: 180 },
+        { nome: "SSO", nomeCompleto: "Sul-Sudoeste", angulo: 202.5 },
+        { nome: "SO", nomeCompleto: "Sudoeste", angulo: 225 },
+        { nome: "OSO", nomeCompleto: "Oeste-Sudoeste", angulo: 247.5 },
+        { nome: "O", nomeCompleto: "Oeste", angulo: 270 },
+        { nome: "ONO", nomeCompleto: "Oeste-Noroeste", angulo: 292.5 },
+        { nome: "NO", nomeCompleto: "Noroeste", angulo: 315 },
+        { nome: "NNO", nomeCompleto: "Norte-Noroeste", angulo: 337.5 }
+    ];
+
+    // Criar pontinhos e labels
+    direcoes.forEach(d => {
+        // Pontinhos
+        const ponto = document.createElement('div');
+        ponto.className = 'ponto';
+        ponto.style.transform = `translate(-50%, -50%) rotate(${d.angulo}deg) translate(0, -190px)`;
+        rosa.appendChild(ponto);
+
+        // Labels
+        const label = document.createElement('div');
+        label.className = 'direcao-label';
+        if (["N", "S", "E", "O"].includes(d.nome)) {
+            label.classList.add('principal');
+        }
+        label.style.left = '50%';
+        label.style.top = '50%';
+        label.style.transform = `translate(-50%, -50%) rotate(${d.angulo}deg) translate(0, -165px) rotate(${-d.angulo}deg)`;
+        label.textContent = d.nome;
+        rosa.appendChild(label);
+    });
+
+    // Determinar direção mais próxima
+    function getDirecao(angle) {
+        angle = (angle + 360) % 360;
+        let closest = direcoes.reduce((prev, curr) => {
+            return Math.abs(curr.angulo - angle) < Math.abs(prev.angulo - angle) ? curr : prev;
+        });
+        return closest;
+    }
+
+    // Mouse move
+    rosa.addEventListener('mousemove', (e) => {
+        const rect = rosa.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const deltaX = e.clientX - centerX;
+        const deltaY = centerY - e.clientY;
+
+        const angleRad = Math.atan2(deltaX, deltaY);
+        let angleDeg = (angleRad * (180 / Math.PI) + 360) % 360;
+
+        // Encontrar direção mais próxima
+        let direcao = direcoes.reduce((prev, curr) => {
+            return (Math.abs(curr.angulo - angleDeg) < Math.abs(prev.angulo - angleDeg) ? curr : prev);
+        });
+
+        seta.style.transform = `translate(-50%, -100%) rotate(${angleDeg}deg)`;
+        direcaoTexto.textContent = `${direcao.nomeCompleto} (${Math.round(angleDeg)}°)`;
+    });
+</script>
+
+</body>
+</html>

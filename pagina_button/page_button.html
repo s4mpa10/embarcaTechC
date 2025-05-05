@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Nível</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .level-box {
+            width: 300px;
+            height: 80px;
+            border: 2px solid #333;
+            margin: 20px;
+            position: relative;
+            display: flex;
+        }
+        .level {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        .button:active {
+            background-color: #0056b3;
+        }
+        .level-text {
+            font-size: 25px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Unidade 02 - Tarefa 1 - Alan Alexandre Sampaio </h2>
+        <div class="buttons">
+            <button class="button" id="increaseBtn" style="background-color: #079113;">Button A - Aumentar</button>
+            <button class="button" id="decreaseBtn" style="background-color: #bd3131;">Button B - Diminuir</button>
+        </div>
+        <div class="level-box">
+            <div id="level" class="level" style="width: 0%;"></div>
+        </div>
+        <div id="levelText" class="level-text">Nível de Ilumincação do Led: 0 - (XXXX)</div>
+    </div>
+
+    <script>
+        let level = 0;  // Inicializa o nível
+        const maxLevel = 4;
+        const minLevel = 0;
+
+        const levelElement = document.getElementById('level');
+        const levelText = document.getElementById('levelText');
+
+        // Função para atualizar o nível e a barra de progresso
+        function updateLevel() {
+            const width = (level) * 25;
+            levelElement.style.width = `${width}%`;
+            levelText.textContent = `Nível de Ilumincação do Led: ${level} - (XXXX)`;
+        }
+
+        // Aumenta o nível
+        document.getElementById('increaseBtn').addEventListener('click', () => {
+            if (level < maxLevel) {
+                level++;
+                updateLevel();
+            }
+        });
+
+        // Diminui o nível
+        document.getElementById('decreaseBtn').addEventListener('click', () => {
+            if (level > minLevel) {
+                level--;
+                updateLevel();
+            }
+        });
+    </script>
+</body>
+</html>
