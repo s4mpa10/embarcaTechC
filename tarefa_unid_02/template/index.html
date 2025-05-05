@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nivel de Iluminacao</title>
+<style>
+    body { 
+        font-family: Arial; 
+        text-align: center; 
+        margin-top: 50px; 
+    }
+    h1 { 
+        font-size: 48px; 
+    }
+    p { 
+        font-size: 36px;
+    }
+    button { 
+        font-size: 24px; 
+        padding: 10px 20px; 
+        margin: 10px; 
+    }
+</style>
+</head>
+<body>
+    <h1>Nivel de Iluminacao</h1>
+    <p>Nivel Atual: <span id='messages'></span></p>
+
+    <script>
+        // Atualiza as mensagens a cada 2 segundos
+        setInterval(() => {
+            fetch('/get_messages')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('messages').innerHTML = 
+                        data.map(msg => `<p>${msg}</p>`).join('');
+                });
+        }, 2000);
+    </script>
+</body>
+</html>
+

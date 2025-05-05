@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR"></html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nivel de Iluminacao - Servidor Pico</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            text-align: center; 
+            margin-top: 50px; 
+        }
+        h1 {
+            font-size: 48px; 
+        }
+        p {
+            font-size: 36px; 
+        }
+        
+        button { 
+            font-size: 24px; 
+            padding: 10px 20px; 
+            margin: 10px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Mensagens da Pico W</h1>
+    <div id="messages">
+        <!-- Mensagens serão exibidas aqui via JavaScript -->
+    </div>
+    
+    <script>
+        // Atualiza as mensagens a cada 2 segundos
+        setInterval(() => {
+            fetch('/get_messages')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('messages').innerHTML = 
+                        data.map(msg => `<p>Nível Iluminação: ${msg}</p>`).join('');
+                });
+        }, 2000);
+    </script>
+</body>
+</html>
+
+

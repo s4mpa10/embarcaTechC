@@ -9,8 +9,8 @@
 #include "lwip/netif.h"
 #include "hardware/pwm.h"
 
-#define WIFI_SSID "Sampaio"
-#define WIFI_PASSWORD "03113012S"
+#define WIFI_SSID "iPhone"
+#define WIFI_PASSWORD "senha123"
 
 #define LED_PIN CYW43_WL_GPIO_LED_PIN
 #define LED_GREEN_PIN 11
@@ -86,32 +86,21 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
 
     printf("Request: %s\n", request);
 
-    // Se for uma requisição para /status
-    if (strstr(request, "GET /status") != NULL) {
-        char response[64];
-        snprintf(response, sizeof(response),
+    if (strncmp(request, "GET /status", 11) == 0) {
+        char status_response[32];
+        snprintf(status_response, sizeof(status_response),
                  "HTTP/1.1 200 OK\r\n"
                  "Content-Type: text/plain\r\n"
+                 "Connection: close\r\n"
                  "\r\n"
                  "%d", duty);
 
-        tcp_write(tpcb, response, strlen(response), TCP_WRITE_FLAG_COPY);
+        tcp_write(tpcb, status_response, strlen(status_response), TCP_WRITE_FLAG_COPY);
         tcp_output(tpcb);
+
         free(request);
         pbuf_free(p);
         return ERR_OK;
-    }
-
-    // Se for uma requisição para mudar o duty via GET /?duty=
-    char *duty_ptr = strstr(request, "GET /?duty=");
-    if (duty_ptr != NULL) {
-        duty_ptr += strlen("GET /?duty=");
-        int new_duty = atoi(duty_ptr);
-        if (new_duty >= 0 && new_duty <= 4) {
-            duty = new_duty;
-            atualizar_iluminacao(duty);
-            printf("Duty atualizado via navegador para: %d\n", duty);
-        }
     }
 
     // Página HTML principal
@@ -119,6 +108,7 @@ static err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
     snprintf(html, sizeof(html),
              "HTTP/1.1 200 OK\r\n"
              "Content-Type: text/html\r\n"
+             "Connection: close\r\n"
              "\r\n"
              "<!DOCTYPE html>\n"
              "<html>\n"
@@ -224,42 +214,6 @@ int inicializa_wifi_e_servidor(){
 }
 
 
-void enviar_requisicao_http(const char* url, int duty_value) {
-    // Criar uma string para a requisição HTTP (exemplo: GET /?duty=2)
-    char request[128];
-    snprintf(request, sizeof(request), "GET %s?duty=%d HTTP/1.1\r\nHost: 192.168.1.100\r\nConnection: close\r\n\r\n", url, duty_value);
-
-    // Criar e configurar a conexão TCP (assumindo que você tenha um socket TCP configurado)
-    struct tcp_pcb *tpcb = tcp_new();
-    if (tpcb == NULL) {
-        printf("Erro ao criar conexão TCP\n");
-        return;
-    }
-
-    // Conectar-se ao servidor (substitua pelo IP do seu servidor)
-    ip_addr_t ip;
-    IP4_ADDR(&ip, 192, 168, 1, 100);  // Substitua pelo IP do servidor
-    err_t err = tcp_connect(tpcb, &ip, 80, NULL);
-    if (err != ERR_OK) {
-        printf("Erro na conexão TCP: %d\n", err);
-        tcp_close(tpcb);
-        return;
-    }
-
-    // Enviar a requisição HTTP
-    err = tcp_write(tpcb, request, strlen(request), TCP_WRITE_FLAG_COPY);
-    if (err != ERR_OK) {
-        printf("Erro ao escrever no TCP: %d\n", err);
-        tcp_close(tpcb);
-        return;
-    }
-
-    // Enviar os dados para o servidor
-    tcp_output(tpcb);
-
-    // Fechar a conexão TCP após a requisição
-    tcp_close(tpcb);
-}
 // Para utilizar é necessário definir a variavel duty: uint16_t duty = 0; (Que vai de 0 a 65535). 
 
 // Depois de definir a variável duty, é necessário utilizar a função set_pwm_duty(RED_PIN(DEFINIR O PINO DO LED), duty(VALOR DE BRILHO)); 
@@ -294,7 +248,6 @@ int main() {
                 duty++;
                 int valor = atualizar_iluminacao(duty);
                 printf("Aumentando nível: %d - (%d)\n", duty, valor);
-                enviar_requisicao_http("/?duty", duty);
             }
         }
 
@@ -305,7 +258,6 @@ int main() {
                 duty--;
                 int valor = atualizar_iluminacao(duty);
                 printf("Diminuindo nível: %d - (%d)\n", duty, valor);
-                enviar_requisicao_http("/?duty", duty);
             }
         }
 
