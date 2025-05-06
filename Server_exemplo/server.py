@@ -8,6 +8,8 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 # Lista para armazenar mensagens
 message_history = []
 
+current_level = 0
+
 @app.route("/")
 def home():
     return render_template('index.html')

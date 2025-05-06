@@ -7,7 +7,7 @@
 #include "hardware/pwm.h"
 
 // ======= CONFIGURAÇÕES ======= //
-#define HOST "172.20.10.2"
+#define HOST "192.168.18.93"
 #define PORT 5000
 #define INTERVALO_MS 1000    // Intervalo entre mensagens (1 segundo)
 #define BUTTON_A_PIN 5
@@ -101,8 +101,13 @@ int main() {
 
     int counter = 0;
     char url[128];
-    bool last_button_state = true; // Estado anterior do botão
-    absolute_time_t last_debounce_time = get_absolute_time(); // Último tempo de debounce
+    // bool last_button_state = true; // Estado anterior do botão
+    // absolute_time_t last_debounce_time = get_absolute_time(); // Último tempo de debounce
+    bool last_button_state_A = true;
+    bool last_button_state_B = true;
+    absolute_time_t last_debounce_time_A = get_absolute_time();
+    absolute_time_t last_debounce_time_B = get_absolute_time();
+
 
     setup_pwm(LED_GREEN_PIN);
 
@@ -110,26 +115,22 @@ int main() {
         bool current_button_state_A = gpio_get(BUTTON_A_PIN);
         bool current_button_state_B = gpio_get(BUTTON_B_PIN);
 
-        // Verifica se o estado do botão mudou e se o tempo de debounce passou
-        if (current_button_state_A != last_button_state) {
-            last_debounce_time = get_absolute_time(); // Atualiza o tempo de debounce
+        // Verifica se o estado do botão A mudou e se o tempo de debounce passou
+        if (current_button_state_A != last_button_state_A) {
+            last_debounce_time_A = get_absolute_time(); // Atualiza o tempo de debounce
         }
 
         // Verifica se o tempo de debounce passou
-        if (absolute_time_diff_us(last_debounce_time, get_absolute_time()) > DEBOUNCE_MS * 1000) {
+        if (absolute_time_diff_us(last_debounce_time_A, get_absolute_time()) > DEBOUNCE_MS * 1000) {
             // Apenas mude o estado se o botão estiver realmente pressionado
-            if (current_button_state_A == 0) { // Botão pressionado
-                sprintf(url, "/mensagem?msg=Botao_A_Clicado_%d", counter++);
-                // gpio_put(LED_GREEN_PIN,1);
+            if (current_button_state_A == 0) { // Botão pressionado A 
                 if (duty < 4) {
                     duty++;
                     int valor = atualizar_iluminacao(duty);
                     printf("Aumentando nível: %d - (%d)\n", duty, valor);
+                    sprintf(url, "/mensagem?msg=Nivel_%d", duty);
                 }
-            } else { // Botão solto
-                sprintf(url, "/mensagem?msg=Botao_A_Offline_%d", counter++);
-                gpio_put(LED_GREEN_PIN,1);
-            }
+            }   
 
             // Configura requisição
             EXAMPLE_HTTP_REQUEST_T req = {0};
@@ -148,12 +149,53 @@ int main() {
                 printf("Sucesso!\n");
             } else {
                 printf("Erro %d - Verifique conexão\n", result);
-                cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, 
-                                                 CYW43_AUTH_WPA2_AES_PSK, 10000);
+                cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000);
             }
         }
 
-        last_button_state = current_button_state_A; // Atualiza o estado anterior do botão
+        last_button_state_A  = current_button_state_A; // Atualiza o estado anterior do botão
+
+
+        // Verifica se o estado do botão A mudou e se o tempo de debounce passou
+        if (current_button_state_B != last_button_state_B) {
+            last_debounce_time_B = get_absolute_time(); // Atualiza o tempo de debounce
+        }
+
+        // Verifica se o tempo de debounce passou
+        if (absolute_time_diff_us(last_debounce_time_B, get_absolute_time()) > DEBOUNCE_MS * 1000) {
+            // Apenas mude o estado se o botão estiver realmente pressionado
+            if (current_button_state_B == 0) { // Botão pressionado A 
+                if (duty > 0) {
+                    duty--;
+                    int valor = atualizar_iluminacao(duty);
+                    printf("Diminuindo nível: %d - (%d)\n", duty, valor);
+                    sprintf(url, "/mensagem?msg=Nivel_%d", duty);
+                }
+            }   
+
+            // Configura requisição
+            EXAMPLE_HTTP_REQUEST_T req = {0};
+            req.hostname = HOST;
+            req.url = url;
+            req.port = PORT;
+            req.headers_fn = http_client_header_print_fn;
+            req.recv_fn = http_client_receive_print_fn;
+
+            // Envia requisição
+            printf("[%d] Enviando: %s\n", counter, url);
+            int result = http_client_request_sync(cyw43_arch_async_context(), &req);
+
+            // Verifica resultado
+            if (result == 0) {
+                printf("Sucesso!\n");
+            } else {
+                printf("Erro %d - Verifique conexão\n", result);
+                cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000);
+            }
+        }
+
+        last_button_state_B  = current_button_state_B; // Atualiza o estado anterior do botão
+
         sleep_ms(INTERVALO_MS);
     }
 
