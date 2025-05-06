@@ -91,7 +91,7 @@ void espera_aleatoria() {
     npClear();
     npSetLED(indice_led, 255, 0, 0);   // Usa o LED aleatório
     npWrite();
-    sleep_ms(200);                     // Mantém aceso por 200ms
+    sleep_ms(100);                     // Mantém aceso por 200ms
 
     // Apaga o LED
     npClear();
@@ -173,10 +173,12 @@ restart:
 
             // Captura o tempo de reação e calcula o intervalo
             absolute_time_t fim_reacao = get_absolute_time();
+            int64_t tempo_reacao_micro = absolute_time_diff_us(inicio_reacao, fim_reacao);  // Em microsegundos
             int64_t tempo_reacao = absolute_time_diff_us(inicio_reacao, fim_reacao) / 1000;  // Em milissegundos
 
             // gpio_put(LED_PIN, 0);  // Desliga o LED
 
+            printf("Tempo de reação em microsegundos: %lld ms\n", tempo_reacao_micro);
             printf("Tempo de reação em milisegundos: %lld ms\n", tempo_reacao);
             printf("Tempo de reação em segundos: %d s\n", tempo_reacao_button(tempo_reacao));
 
@@ -184,13 +186,16 @@ restart:
             memset(ssd, 0, ssd1306_buffer_length);
 
             // Converte valores para string
+            char buffer_us[24];
             char buffer_ms[24];
             char buffer_s[24];
+            snprintf(buffer_us, sizeof(buffer_us), "Tempo: %lld us", tempo_reacao_micro);
             snprintf(buffer_ms, sizeof(buffer_ms), "Tempo: %lld ms", tempo_reacao);
             snprintf(buffer_s, sizeof(buffer_s), "Tempo: %d s", tempo_reacao_button(tempo_reacao));
 
             // Exibe as strings no display
             ssd1306_draw_string(ssd, 0, 0, "Reacao medida:");
+            ssd1306_draw_string(ssd, 0, 10, buffer_us);
             ssd1306_draw_string(ssd, 0, 30, buffer_ms);
             ssd1306_draw_string(ssd, 0, 50, buffer_s);
 
