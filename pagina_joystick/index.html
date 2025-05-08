@@ -1,14 +1,13 @@
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rosa dos Ventos Interativa</title>
+<title>Unidade 02 - Tarefa 2 - Joystick</title>
 <style>
     body {
-        background: #1e1e2f;
+        background: #222;
         color: #fff;
-        font-family: Arial, sans-serif;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -16,17 +15,13 @@
         height: 100vh;
         margin: 0;
     }
-    h1 {
-        margin-bottom: 20px;
-        font-size: 1.5rem;
-    }
     .rosa-dos-ventos {
         position: relative;
-        width: 300px;
-        height: 300px;
+        width: 400px;
+        height: 400px;
+        background: #333;
+        border: 2px solid #555;
         border-radius: 50%;
-        background: radial-gradient(circle, #3e3e5e 0%, #2e2e4e 100%);
-        box-shadow: 0 0 20px rgba(0,0,0,0.6);
     }
     .seta {
         position: absolute;
@@ -34,38 +29,48 @@
         left: 50%;
         width: 0;
         height: 0;
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-bottom: 60px solid #f44336;
+        border-left: 25px solid transparent;
+        border-right: 25px solid transparent;
+        border-bottom: 50px solid red;
         transform-origin: bottom center;
         transform: translate(-50%, -100%) rotate(0deg);
         transition: transform 0.2s ease;
+        pointer-events: none;
+    }
+    .ponto {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform-origin: center center;
     }
     .direcao-label {
         position: absolute;
-        font-size: 0.8rem;
-        font-weight: bold;
-        text-align: center;
-        width: 30px;
-        transform-origin: center center;
+        font-size: 0.85rem;
         color: #fff;
-        text-shadow: 1px 1px 2px #000;
+        text-align: center;
+        width: 50px;
+        transform-origin: center center;
     }
     #direcao {
         margin-top: 20px;
-        font-size: 1.1rem;
-        padding: 8px 16px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: 2px solid #fff;
+        padding: 10px 20px;
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.1);
-        border: 1px solid #fff;
     }
 </style>
 </head>
 <body>
 
-<h1>Rosa dos Ventos Interativa</h1>
+<h1>Unidade 02 - Tarefa 2 - Joystick - Rosa dos Ventos - Alan Alexandre Sampaio</h1>
 <div class="rosa-dos-ventos" id="rosa">
-    <div class="seta" id="seta"></div>
+    <div id="seta" class="seta"></div>
 </div>
 <div id="direcao">Norte (0°)</div>
 
@@ -74,45 +79,91 @@
     const seta = document.getElementById('seta');
     const direcaoTexto = document.getElementById('direcao');
 
+    // Lista dos 32 rumos
     const direcoes = [
-        { nome: "N", angulo: 0 },
-        { nome: "NE", angulo: 45 },
-        { nome: "E", angulo: 90 },
-        { nome: "SE", angulo: 135 },
-        { nome: "S", angulo: 180 },
-        { nome: "SO", angulo: 225 },
-        { nome: "O", angulo: 270 },
-        { nome: "NO", angulo: 315 }
+        { nome: "N", nomeCompleto: "Norte", angulo: 0 },
+        { nome: "NNE", nomeCompleto: "Norte-Nordeste", angulo: 22.5 },
+        { nome: "NE", nomeCompleto: "Nordeste", angulo: 45 },
+        { nome: "ENE", nomeCompleto: "Este-Nordeste", angulo: 67.5 },
+        { nome: "L", nomeCompleto: "Leste", angulo: 90 },
+        { nome: "ESE", nomeCompleto: "Este-Sudeste", angulo: 112.5 },
+        { nome: "SE", nomeCompleto: "Sudeste", angulo: 135 },
+        { nome: "SSE", nomeCompleto: "Sul-Sudeste", angulo: 157.5 },
+        { nome: "S", nomeCompleto: "Sul", angulo: 180 },
+        { nome: "SSO", nomeCompleto: "Sul-Sudoeste", angulo: 202.5 },
+        { nome: "SO", nomeCompleto: "Sudoeste", angulo: 225 },
+        { nome: "OSO", nomeCompleto: "Oeste-Sudoeste", angulo: 247.5 },
+        { nome: "O", nomeCompleto: "Oeste", angulo: 270 },
+        { nome: "ONO", nomeCompleto: "Oeste-Noroeste", angulo: 292.5 },
+        { nome: "NO", nomeCompleto: "Noroeste", angulo: 315 },
+        { nome: "NNO", nomeCompleto: "Norte-Noroeste", angulo: 337.5 }
     ];
 
+    // Criar pontinhos e labels
     direcoes.forEach(d => {
+        // Pontinhos
+        const ponto = document.createElement('div');
+        ponto.className = 'ponto';
+        ponto.style.transform = `translate(-50%, -50%) rotate(${d.angulo}deg) translate(0, -190px)`;
+        rosa.appendChild(ponto);
+
+        // Labels
         const label = document.createElement('div');
         label.className = 'direcao-label';
+        if (["N", "S", "E", "O"].includes(d.nome)) {
+            label.classList.add('principal');
+        }
         label.style.left = '50%';
         label.style.top = '50%';
-        label.style.transform = `translate(-50%, -50%) rotate(${d.angulo}deg) translate(0, -130px) rotate(${-d.angulo}deg)`;
+        label.style.transform = `translate(-50%, -50%) rotate(${d.angulo}deg) translate(0, -165px) rotate(${-d.angulo}deg)`;
         label.textContent = d.nome;
         rosa.appendChild(label);
     });
 
-    rosa.addEventListener('mousemove', (e) => {
-        const rect = rosa.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const deltaX = e.clientX - centerX;
-        const deltaY = centerY - e.clientY;
-
-        const angleRad = Math.atan2(deltaX, deltaY);
-        let angleDeg = (angleRad * (180 / Math.PI) + 360) % 360;
-
+    // Determinar direção mais próxima
+    function getDirecao(angle) {
+        angle = (angle + 360) % 360;
         let closest = direcoes.reduce((prev, curr) => {
-            return Math.abs(curr.angulo - angleDeg) < Math.abs(prev.angulo - angleDeg) ? curr : prev;
+            return Math.abs(curr.angulo - angle) < Math.abs(prev.angulo - angle) ? curr : prev;
         });
+        return closest;
+    }
 
-        seta.style.transform = `translate(-50%, -100%) rotate(${angleDeg}deg)`;
-        direcaoTexto.textContent = `${closest.nome} (${Math.round(angleDeg)}°)`;
+    function atualizarSetaDoServidor() {
+    fetch('/get_messages')
+    .then(response => response.json())
+    .then(data => {
+        if (data.length === 0) return;
+
+        const ultimaMensagem = data[data.length - 1];
+        // Ex: "[12:34:56] x - 1500 Y - 2300"
+        const regex = /x - (\d+) Y - (\d+)/;
+        const match = ultimaMensagem.match(regex);
+
+        if (match) {
+            const x = parseInt(match[1]);
+            const y = parseInt(match[2]);
+
+            // Converte valores de ADC (0-4095) para ângulo
+            const deltaX = x - 2048;
+            const deltaY = 2048 - y;
+
+            const angleRad = Math.atan2(deltaX, deltaY);
+            let angleDeg = (angleRad * (180 / Math.PI) + 360) % 360;
+
+            seta.style.transform = `translate(-50%, -100%) rotate(${angleDeg}deg)`;
+
+            let direcao = getDirecao(angleDeg);
+            direcaoTexto.textContent = `${direcao.nomeCompleto} (${Math.round(angleDeg)}°)`;
+        }
     });
+}
+
+// Atualiza a cada 500ms
+setInterval(atualizarSetaDoServidor, 500);
+
+
 </script>
 
 </body>
-</html> -->
+</html>

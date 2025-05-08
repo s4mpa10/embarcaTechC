@@ -38,15 +38,13 @@ void setup_joystick()
 }
 
 // Função de configuração geral
-void setup()
-{
+void setup() {
   stdio_init_all();                                // Inicializa a porta serial para saída de dados
   setup_joystick();                                // Chama a função de configuração do joystick
 }
 
 // Função para ler os valores dos eixos do joystick (X e Y)
-void joystick_read_axis(uint16_t *vrx_value, uint16_t *vry_value)
-{
+void joystick_read_axis(uint16_t *vrx_value, uint16_t *vry_value) {
   // Leitura do valor do eixo X do joystick
   adc_select_input(ADC_CHANNEL_0); // Seleciona o canal ADC para o eixo X
   sleep_us(2);                     // Pequeno delay para estabilidade
@@ -58,6 +56,26 @@ void joystick_read_axis(uint16_t *vrx_value, uint16_t *vry_value)
   *vry_value = adc_read();         // Lê o valor do eixo Y (0-4095)
 }
 
+void calibrar_joystick(uint16_t *min_x, uint16_t *max_x, uint16_t *min_y, uint16_t *max_y) {
+    printf("Calibrando joystick... Mova o eixo em todas as direções\n");
+    
+    uint32_t inicio = to_ms_since_boot(get_absolute_time());
+    while (to_ms_since_boot(get_absolute_time()) - inicio < 8000) {
+        uint16_t vrx_value, vry_value;
+        joystick_read_axis(&vrx_value, &vry_value);
+        
+        *min_x = vrx_value < *min_x ? vrx_value : *min_x;
+        *max_x = vrx_value > *max_x ? vrx_value : *max_x;
+        *min_y = vry_value < *min_y ? vry_value : *min_y;
+        *max_y = vry_value > *max_y ? vry_value : *max_y;
+        
+        sleep_ms(10);
+    }
+    
+    printf("Calibração finalizada:\n");
+    printf("X: min=%d, max=%d\n", *min_x, *max_x);
+    printf("Y: min=%d, max=%d\n", *min_y, *max_y);
+}
 
 // Função principal
 int main() {
@@ -80,14 +98,15 @@ int main() {
 
     int counter = 0;
     char url[128];
-    bool last_button_state = true;
     absolute_time_t last_debounce_time = get_absolute_time();
 
     uint16_t vrx_value, vry_value, sw_value; // Variáveis para armazenar os valores do joystick (eixos X e Y) e botão
     setup();                                 // Chama a função de configuração
     printf("Joystick-PWM\n");                // Exibe uma mensagem inicial via porta serial
 
-    int duty = 0;
+    uint16_t min_x, max_x, min_y, max_y;
+    calibrar_joystick(&min_x, &max_x, &min_y, &max_y);
+    printf("Valores de calibração: min_x=%d, max_x=%d, min_y=%d, max_y=%d\n", min_x, max_x, min_y, max_y);
        
     // Loop principal
     while (1) {
@@ -97,55 +116,33 @@ int main() {
         // Pequeno delay antes da próxima leitura
         sleep_ms(100); // Espera 100 ms antes de repetir o ciclo
 
-        bool current_button_state = gpio_get(SW); // Lê o estado atual do botão do joystick (pressionado ou não)
+        // bool current_button_state = gpio_get(SW); // Lê o estado atual do botão do joystick (pressionado ou não)
 
-        // Verifica se o estado do botão A mudou e se o tempo de debounce passou
-        if (current_button_state != last_button_state) {
-            last_debounce_time = get_absolute_time(); // Atualiza o tempo de debounce
+        int norm_x = (vrx_value - min_x) * 4095 / (max_x - min_x);
+        int norm_y = (vry_value - min_y) * 4095 / (max_y - min_y);
+
+        // sprintf(url, "/mensagem?msgA=%d&msgB=%d", vrx_value, vry_value);
+        sprintf(url, "/mensagem?msgA=%d&msgB=%d", norm_x, norm_y);
+
+        EXAMPLE_HTTP_REQUEST_T req = {0};
+        req.hostname = HOST;
+        req.url = url;
+        req.port = PORT;
+        req.headers_fn = http_client_header_print_fn;
+        req.recv_fn = http_client_receive_print_fn;
+
+        // Envia requisição
+        printf("[%d] Enviando: %s\n", counter, url);
+        int result = http_client_request_sync(cyw43_arch_async_context(), &req);
+
+        // Verifica resultado
+        if (result == 0) {
+            printf("Sucesso!\n");
+        } else {
+            printf("Erro %d - Verifique conexão\n", result);
+            cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000);
         }
-
-        // Verifica se o tempo de debounce passou
-        if (absolute_time_diff_us(last_debounce_time, get_absolute_time()) > DEBOUNCE_MS * 1000) {
-            // Apenas mude o estado se o botão estiver realmente pressionado
-            if (current_button_state == 0) { // Botão pressionado A 
-                if (0 == 0) {
-                    char status[15] = {0};  // Zera o array
-                    strcpy(status, "A_Pressionado");  // Copia a string para o array
-                    printf("Aumentando nível: %d - (%d)\n", duty);
-                    // sprintf(url, "/mensagem?msgA=Nivel_%d_%s", duty, status);
-                    sprintf(url, "/mensagem?msgA=%d&msgB=%d", vrx_value, vry_value);
-                }
-            } else {
-                // Botão solto, atualiza a URL para indicar que o botão foi solto
-                char status[8] = {0};  // Zera o array
-                strcpy(status, "A_Solto");  // Copia a string para o array
-                sprintf(url, "/mensagem?msgA=%d&msgB=%d", vrx_value, vry_value);
-            }
-
-            // Configura requisição
-            EXAMPLE_HTTP_REQUEST_T req = {0};
-            req.hostname = HOST;
-            req.url = url;
-            req.port = PORT;
-            req.headers_fn = http_client_header_print_fn;
-            req.recv_fn = http_client_receive_print_fn;
-
-            // Envia requisição
-            printf("[%d] Enviando: %s\n", counter, url);
-            int result = http_client_request_sync(cyw43_arch_async_context(), &req);
-
-            // Verifica resultado
-            if (result == 0) {
-                printf("Sucesso!\n");
-            } else {
-                printf("Erro %d - Verifique conexão\n", result);
-                cyw43_arch_wifi_connect_timeout_ms(WIFI_SSID, WIFI_PASSWORD, CYW43_AUTH_WPA2_AES_PSK, 10000);
-            }
-        }
-
-        last_button_state  = current_button_state; // Atualiza o estado anterior do botão
-    
     }
-
+      
     return 0; // Nunca chegará aqui devido ao while(1)
 }

@@ -1,144 +1,176 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivel de Iluminacao - Servidor Pico</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .level-box {
-            width: 300px;
-            height: 80px;
-            border: 2px solid #333;
-            margin: 20px;
-            position: relative;
-            display: flex;
-        }
-        .level {
-            height: 100%;
-            background-color: #4CAF50;
-            transition: width 0.3s;
-        }
-        .buttons {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-        }
-        .button {
-            margin: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: all 0.15s ease; /* animação suave */
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unidade 02 - Tarefa 2 - Joystick</title>
+<style>
+    body {
+        background: #222;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .rosa-dos-ventos {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        background: #333;
+        border: 2px solid #555;
+        border-radius: 50%;
+    }
+    .seta {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-left: 25px solid transparent;
+        border-right: 25px solid transparent;
+        border-bottom: 50px solid red;
+        transform-origin: bottom center;
+        transform: translate(-50%, -100%) rotate(0deg);
+        transition: transform 0.2s ease;
+        pointer-events: none;
+    }
+    .ponto {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform-origin: center center;
+    }
+    .direcao-label {
+        position: absolute;
+        font-size: 0.85rem;
+        color: #fff;
+        text-align: center;
+        width: 50px;
+        transform-origin: center center;
+    }
+    #direcao {
+        margin-top: 20px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: 2px solid #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .circulo-verde {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        background: limegreen;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 8px limegreen;
+    }
 
-        .button:active {
-            transform: scale(0.95); /* diminui levemente ao clicar */
-            background-color: #0056b3;
-        }
-        .level-text {
-            font-size: 25px;
-            margin-top: 10px;
-        }
-        .info-box {
-            width: 350px;
-            padding: 15px;
-            border: 2px solid #555;
-            background-color: #fff;
-            margin-top: 15px;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 18px;
-            box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
-            font-family: 20px Arial, sans-serif;
-        }
-    </style>
+</style>
 </head>
 <body>
-    <div class="container">
-        <h2>Unidade 02 - Tarefa 1 - Alan Alexandre Sampaio </h2>
-        <div class="buttons">
-            <button class="button" id="increaseBtn" style="background-color: #079113;">Button A - Aumentar</button>
-            <button class="button" id="decreaseBtn" style="background-color: #bd3131;">Button B - Diminuir</button>
-        </div>
-        <div class="level-box">
-            <div id="level" class="level" style="width: 0%;"></div>
-        </div>
-        <div class="level-text"><h3>Nível de Ilumincação do Led:</h3> </div>
-        
-        <!-- 📦 Nova Box -->
-        <div id="messages" class="info-box"> </div>
 
-    </div>
+<h1>Unidade 02 - Tarefa 2 - Joystick - Rosa dos Ventos - Alan Alexandre Sampaio</h1>
+<div class="rosa-dos-ventos" id="rosa">
+    <div id="seta" class="seta"></div>
+</div>
+<div id="direcao">Norte (0°)</div>
 
-    <script>
-        let level = 0;  // Inicializa o nível
-        const maxLevel = 4;
-        const minLevel = 0;
+<script>
+    const rosa = document.getElementById('rosa');
+    const seta = document.getElementById('seta');
+    const direcaoTexto = document.getElementById('direcao');
 
-        const levelElement = document.getElementById('level');
+    const direcoes = [
+        { nome: "N", nomeCompleto: "Norte", angulo: 0 },
+        { nome: "NNE", nomeCompleto: "Norte-Nordeste", angulo: 22.5 },
+        { nome: "NE", nomeCompleto: "Nordeste", angulo: 45 },
+        { nome: "ENE", nomeCompleto: "Este-Nordeste", angulo: 67.5 },
+        { nome: "L", nomeCompleto: "Leste", angulo: 90 },
+        { nome: "ESE", nomeCompleto: "Este-Sudeste", angulo: 112.5 },
+        { nome: "SE", nomeCompleto: "Sudeste", angulo: 135 },
+        { nome: "SSE", nomeCompleto: "Sul-Sudeste", angulo: 157.5 },
+        { nome: "S", nomeCompleto: "Sul", angulo: 180 },
+        { nome: "SSO", nomeCompleto: "Sul-Sudoeste", angulo: 202.5 },
+        { nome: "SO", nomeCompleto: "Sudoeste", angulo: 225 },
+        { nome: "OSO", nomeCompleto: "Oeste-Sudoeste", angulo: 247.5 },
+        { nome: "O", nomeCompleto: "Oeste", angulo: 270 },
+        { nome: "ONO", nomeCompleto: "Oeste-Noroeste", angulo: 292.5 },
+        { nome: "NO", nomeCompleto: "Noroeste", angulo: 315 },
+        { nome: "NNO", nomeCompleto: "Norte-Noroeste", angulo: 337.5 }
+    ];
 
-        // Função para atualizar o nível e a barra de progresso
-        function updateLevel() {
-            const width = (level) * 25;
-            levelElement.style.width = `${width}%`;
-            levelText.textContent = `Nível de Ilumincação do Led: ${level} - (XXXX)`;
-        }
+    const centerX = 329;
+    const centerY = 315;
 
-        // Aumenta o nível
-        document.getElementById('increaseBtn').addEventListener('click', () => {
-            if (level < maxLevel) {
-                level++;
-                updateLevel();
-            }
-        });
+    direcoes.forEach(d => {
+        const ponto = document.createElement('div');
+        ponto.className = 'ponto';
+        ponto.style.transform = `translate(-50%, -50%) rotate(${d.angulo}deg) translate(0, -190px)`;
+        rosa.appendChild(ponto);
 
-        // Diminui o nível
-        document.getElementById('decreaseBtn').addEventListener('click', () => {
-            if (level > minLevel) {
-                level--;
-                updateLevel();
-            }
-        });
-        
-        setInterval(() => {
-            fetch('/get_messages')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('messages').innerHTML = 
-                        data.map(msg => `<p>${msg}</p>`).join('');
-                    
-                    // Pega a última mensagem válida de nível
-                    const nivelMsg = data.reverse().find(m => m.includes('Nivel_'));
-                    if (nivelMsg) {
-                        const [nivelParte, statusParte] = nivelMsg.split('|');
-                        const nivel = parseInt(nivelMsg.split('Nivel_')[1]);
-                        if (!isNaN(nivel)) {
-                            level = nivel;
-                            updateLevel();
-                        }
-                    }
-                });
-        }); // Atualiza a cada 1 segundo (1000 ms)
+        const label = document.createElement('div');
+        label.className = 'direcao-label';
+        label.style.left = '50%';
+        label.style.top = '50%';
+        label.style.transform = `translate(-50%, -50%) rotate(${d.angulo}deg) translate(0, -165px) rotate(${-d.angulo}deg)`;
+        label.textContent = d.nome;
+        rosa.appendChild(label);
+    });
 
-    </script>
+    setInterval(() => {
+        fetch('/get_messages')
+            .then(response => response.json())
+            .then(data => {
+
+                function getDirecao(angle) {
+                    angle = (angle + 360) % 360;
+                    return direcoes.reduce((prev, curr) => {
+                        return Math.abs(curr.angulo - angle) < Math.abs(prev.angulo - angle) ? curr : prev;
+                    });
+                }
+
+                const regex = /\[(.*?)\] X - (\d+) Y - (\d+)/;
+                const ultimaMensagemValida = data.slice().reverse().find(msg => regex.test(msg));
+
+                if (ultimaMensagemValida) {
+                    const match = ultimaMensagemValida.match(regex);
+                    const x = parseInt(match[2]);
+                    const y = parseInt(match[3]);
+
+                    console.log(`X: ${x}, Y: ${y}`);
+
+                    const deltaX = x - centerX;
+                    const deltaY = centerY - y;  // inverter porque Y cresce para baixo na tela
+
+                    let angleDeg = Math.atan2(deltaX, deltaY) * (180 / Math.PI);
+                    angleDeg = (angleDeg + 360) % 360;
+
+                    const direcao = getDirecao(angleDeg);
+
+                    seta.style.transform = `translate(-50%, -100%) rotate(${angleDeg}deg)`;
+                    direcaoTexto.textContent = `${direcao.nomeCompleto} (${Math.round(angleDeg)}°)`;
+                }
+
+            });
+    }, 500);  // atualiza a cada meio segundo (mais fluido)
+</script>
+
+
 </body>
 </html>
+
+
+
+
+

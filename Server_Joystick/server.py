@@ -20,7 +20,7 @@ def receber_mensagem_A():
     mensagemB = request.args.get("msgB", "Sem mensagem")
 
     timestamp = datetime.now().strftime("%H:%M:%S")
-    formatted_msg = f"[{timestamp}] x - {mensagemA} Y - {mensagemB}"
+    formatted_msg = f"[{timestamp}] X - {mensagemA} Y - {mensagemB}"
     
     message_history.append(formatted_msg)
     print(formatted_msg)  # Log no console
