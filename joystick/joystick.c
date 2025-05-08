@@ -11,7 +11,6 @@ const int ADC_CHANNEL_1 = 1; // Canal ADC para o eixo Y do joystick
 const int SW = 22;           // Pino de leitura do botão do joystick
 
 const float DIVIDER_PWM = 16.0;          // Divisor fracional do clock para o PWM
-const uint16_t PERIOD = 4096;            // Período do PWM (valor máximo do contador)
 
 // Função para configurar o joystick (pinos de leitura e ADC)
 void setup_joystick()

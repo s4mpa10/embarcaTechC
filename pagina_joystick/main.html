@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Rosa dos Ventos</title>
+  <style>
+    body {
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    .compass {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+    }
+
+    .rose {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300px;
+      height: 300px;
+      transform: translate(-50%, -50%);
+      background: conic-gradient(
+        black 0deg 22.5deg,
+        lightgray 22.5deg 45deg,
+        black 45deg 67.5deg,
+        lightgray 67.5deg 90deg,
+        black 90deg 112.5deg,
+        lightgray 112.5deg 135deg,
+        black 135deg 157.5deg,
+        lightgray 157.5deg 180deg,
+        black 180deg 202.5deg,
+        lightgray 202.5deg 225deg,
+        black 225deg 247.5deg,
+        lightgray 247.5deg 270deg,
+        black 270deg 292.5deg,
+        lightgray 292.5deg 315deg,
+        black 315deg 337.5deg,
+        lightgray 337.5deg 360deg
+      );
+      border-radius: 50%;
+      transition: transform 0.5s ease;
+    }
+
+    .direction {
+      position: absolute;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .north     { top: -20px; left: 50%; transform: translateX(-50%); }
+    .northeast { top: 20px; right: 20px; }
+    .east      { top: 50%; right: -20px; transform: translateY(-50%); }
+    .southeast { bottom: 20px; right: 20px; }
+    .south     { bottom: -20px; left: 50%; transform: translateX(-50%); }
+    .southwest { bottom: 20px; left: 20px; }
+    .west      { top: 50%; left: -20px; transform: translateY(-50%); }
+    .northwest { top: 20px; left: 20px; }
+
+    /* Colaterais */
+    .nne { top: 0px; left: 75%; transform: translateX(-50%); }
+    .ene { top: 25%; right: 0px; transform: translateY(-50%); }
+    .ese { bottom: 25%; right: 0px; transform: translateY(50%); }
+    .sse { bottom: 0px; left: 75%; transform: translateX(-50%); }
+    .sso { bottom: 0px; left: 25%; transform: translateX(-50%); }
+    .oso { bottom: 25%; left: 0px; transform: translateY(50%); }
+    .ono { top: 25%; left: 0px; transform: translateY(-50%); }
+    .nno { top: 0px; left: 25%; transform: translateX(-50%); }
+
+    button {
+      margin-top: 30px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background: #333;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="compass">
+    <div class="direction north">N</div>
+    <div class="direction northeast">NE</div>
+    <div class="direction east">E</div>
+    <div class="direction southeast">SE</div>
+    <div class="direction south">S</div>
+    <div class="direction southwest">SO</div>
+    <div class="direction west">O</div>
+    <div class="direction northwest">NO</div>
+
+    <!-- Colaterais -->
+    <div class="direction nne">NNE</div>
+    <div class="direction ene">ENE</div>
+    <div class="direction ese">ESE</div>
+    <div class="direction sse">SSE</div>
+    <div class="direction sso">SSO</div>
+    <div class="direction oso">OSO</div>
+    <div class="direction ono">ONO</div>
+    <div class="direction nno">NNO</div>
+
+    <div class="rose" id="rose"></div>
+  </div>
+
+  <button onclick="rotateRose()">Girar Rosa dos Ventos</button>
+
+  <script>
+    let angle = 0;
+
+    function rotateRose() {
+      angle += 45;
+      document.getElementById("rose").style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+    }
+  </script>
+
+</body>
+</html>

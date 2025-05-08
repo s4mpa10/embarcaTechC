@@ -16,10 +16,11 @@ def home():
 
 @app.route("/mensagem", methods=["GET"])
 def receber_mensagem_A():
-    mensagem = request.args.get("msg", "Sem mensagem")
+    mensagemA = request.args.get("msgA", "Sem mensagem")
+    mensagemB = request.args.get("msgB", "Sem mensagem")
 
     timestamp = datetime.now().strftime("%H:%M:%S")
-    formatted_msg = f"[{timestamp}] {mensagem}"
+    formatted_msg = f"[{timestamp}] x - {mensagemA} Y - {mensagemB}"
     
     message_history.append(formatted_msg)
     print(formatted_msg)  # Log no console

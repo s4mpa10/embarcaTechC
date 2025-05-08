@@ -112,13 +112,14 @@ int main() {
                     char status[15] = {0};  // Zera o array
                     strcpy(status, "A_Pressionado");  // Copia a string para o array
                     printf("Aumentando nível: %d - (%d)\n", duty);
-                    sprintf(url, "/mensagem?msg=Nivel_%d_%s", duty, status);
+                    // sprintf(url, "/mensagem?msgA=Nivel_%d_%s", duty, status);
+                    sprintf(url, "/mensagem?msgA=%d&msgB=%d", vrx_value, vry_value);
                 }
             } else {
                 // Botão solto, atualiza a URL para indicar que o botão foi solto
                 char status[8] = {0};  // Zera o array
                 strcpy(status, "A_Solto");  // Copia a string para o array
-                sprintf(url, "/mensagem?msg=Nivel_%d_%s", duty, status);
+                sprintf(url, "/mensagem?msgA=%d&msgB=%d", vrx_value, vry_value);
             }
 
             // Configura requisição

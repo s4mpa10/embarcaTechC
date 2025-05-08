@@ -7,7 +7,7 @@
 #include "hardware/pwm.h"
 
 // ======= CONFIGURAÇÕES ======= //
-#define HOST "192.168.18.93"
+#define HOST "172.20.10.5"
 #define PORT 5000
 #define INTERVALO_MS 1000    // Intervalo entre mensagens (1 segundo)
 #define BUTTON_A_PIN 5
@@ -28,11 +28,9 @@ void set_pwm_duty(uint pin, uint16_t duty) {
     pwm_set_gpio_level(pin, duty);                  // Define o duty cycle do pino (0-65535)
 }
 
-int atualizar_iluminacao(int nivel)
-{
+int atualizar_iluminacao(int nivel) {
     // Liga ou desliga o LED externo de acordo com o nível
-    switch (nivel)
-    {
+    switch (nivel) {
     case 0:
         set_pwm_duty(LED_GREEN_PIN, 0);
         return 0;
@@ -107,7 +105,6 @@ int main() {
     bool last_button_state_B = true;
     absolute_time_t last_debounce_time_A = get_absolute_time();
     absolute_time_t last_debounce_time_B = get_absolute_time();
-
 
     setup_pwm(LED_GREEN_PIN);
 
