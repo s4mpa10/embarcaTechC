@@ -9,7 +9,7 @@
 #include "hardware/adc.h" // Biblioteca para manipulação do ADC no RP2040
 
 // ======= CONFIGURAÇÕES ======= //
-#define HOST "192.168.18.93"
+#define HOST "172.20.10.5"
 #define PORT 5000
 #define DEBOUNCE_MS 50       // Tempo de debounce em milissegundos
 // Definição dos pinos usados para o joystick 
@@ -44,20 +44,38 @@ void setup() {
 }
 
 // Função para ler os valores dos eixos do joystick (X e Y)
-void joystick_read_axis(uint16_t *vrx_value, uint16_t *vry_value) {
-  // Leitura do valor do eixo X do joystick
-  adc_select_input(ADC_CHANNEL_0); // Seleciona o canal ADC para o eixo X
-  sleep_us(2);                     // Pequeno delay para estabilidade
-  *vrx_value = adc_read();         // Lê o valor do eixo X (0-4095)
+// void joystick_read_axis(uint16_t *vrx_value, uint16_t *vry_value) {
+//   // Leitura do valor do eixo X do joystick
+//   adc_select_input(ADC_CHANNEL_0); // Seleciona o canal ADC para o eixo X
+//   sleep_us(2);                     // Pequeno delay para estabilidade
+//   *vrx_value = adc_read();         // Lê o valor do eixo X (0-4095)
 
-  // Leitura do valor do eixo Y do joystick
-  adc_select_input(ADC_CHANNEL_1); // Seleciona o canal ADC para o eixo Y
-  sleep_us(2);                     // Pequeno delay para estabilidade
-  *vry_value = adc_read();         // Lê o valor do eixo Y (0-4095)
-}
+//   // Leitura do valor do eixo Y do joystick
+//   adc_select_input(ADC_CHANNEL_1); // Seleciona o canal ADC para o eixo Y
+//   sleep_us(2);                     // Pequeno delay para estabilidade
+//   *vry_value = adc_read();         // Lê o valor do eixo Y (0-4095)
+// }
+void joystick_read_axis(uint16_t *vrx_value, uint16_t *vry_value) {
+    // Leitura do valor do eixo X do joystick
+    adc_select_input(ADC_CHANNEL_0); // Seleciona o canal ADC para o eixo X
+    sleep_us(2);                     // Pequeno delay para estabilidade
+    *vry_value = 4095 - adc_read();  // Inverte o valor do eixo X
+  
+    // Leitura do valor do eixo Y do joystick
+    adc_select_input(ADC_CHANNEL_1); // Seleciona o canal ADC para o eixo Y
+    sleep_us(2);                     // Pequeno delay para estabilidade
+    *vrx_value = 4095 - adc_read();  // Inverte o valor do eixo Y
+  }
+
+
+
+
+
 
 void calibrar_joystick(uint16_t *min_x, uint16_t *max_x, uint16_t *min_y, uint16_t *max_y) {
     printf("Calibrando joystick... Mova o eixo em todas as direções\n");
+
+    sleep_ms(3000); // Espera 3 segundos para o usuário se preparar
     
     uint32_t inicio = to_ms_since_boot(get_absolute_time());
     while (to_ms_since_boot(get_absolute_time()) - inicio < 8000) {
@@ -113,16 +131,8 @@ int main() {
         joystick_read_axis(&vrx_value, &vry_value); // Lê os valores dos eixos do joystick
         printf("X: %d Y: %d\n", vrx_value, vry_value); // Exibe os valores lidos via porta serial
 
-        // Pequeno delay antes da próxima leitura
-        sleep_ms(100); // Espera 100 ms antes de repetir o ciclo
-
-        // bool current_button_state = gpio_get(SW); // Lê o estado atual do botão do joystick (pressionado ou não)
-
-        int norm_x = (vrx_value - min_x) * 4095 / (max_x - min_x);
-        int norm_y = (vry_value - min_y) * 4095 / (max_y - min_y);
-
+        sprintf(url, "/mensagem?msgA=%d&msgB=%d", vrx_value, vry_value);
         // sprintf(url, "/mensagem?msgA=%d&msgB=%d", vrx_value, vry_value);
-        sprintf(url, "/mensagem?msgA=%d&msgB=%d", norm_x, norm_y);
 
         EXAMPLE_HTTP_REQUEST_T req = {0};
         req.hostname = HOST;
@@ -134,6 +144,7 @@ int main() {
         // Envia requisição
         printf("[%d] Enviando: %s\n", counter, url);
         int result = http_client_request_sync(cyw43_arch_async_context(), &req);
+        sleep_ms(50);
 
         // Verifica resultado
         if (result == 0) {

@@ -110,9 +110,6 @@
         { nome: "NNO", nomeCompleto: "Norte-Noroeste", angulo: 337.5 }
     ];
 
-    const centerX = 329;
-    const centerY = 315;
-
     direcoes.forEach(d => {
         const ponto = document.createElement('div');
         ponto.className = 'ponto';
@@ -129,48 +126,36 @@
     });
 
     setInterval(() => {
-        fetch('/get_messages')
-            .then(response => response.json())
-            .then(data => {
+    fetch('/get_messages')
+        .then(response => response.json())
+        .then(data => {
+            const regex = /\[(.*?)\] X - (\d+) Y - (\d+)/;
+            const ultimaMensagemValida = data.slice().reverse().find(msg => regex.test(msg));
 
-                function getDirecao(angle) {
-                    angle = (angle + 360) % 360;
-                    return direcoes.reduce((prev, curr) => {
-                        return Math.abs(curr.angulo - angle) < Math.abs(prev.angulo - angle) ? curr : prev;
-                    });
-                }
+            if (ultimaMensagemValida) {
+                const match = ultimaMensagemValida.match(regex);
+                const x = parseInt(match[2]);
+                const y = parseInt(match[3]);
 
-                const regex = /\[(.*?)\] X - (\d+) Y - (\d+)/;
-                const ultimaMensagemValida = data.slice().reverse().find(msg => regex.test(msg));
+                console.log(`X: ${x}, Y: ${y}`);
 
-                if (ultimaMensagemValida) {
-                    const match = ultimaMensagemValida.match(regex);
-                    const x = parseInt(match[2]);
-                    const y = parseInt(match[3]);
+                // Calcula o ângulo baseado nos valores lidos
+                const deltaX = x - 2048;
+                const deltaY = 2048 - y;  // inverter porque Y cresce pra baixo
+                let angleDeg = Math.atan2(deltaX, deltaY) * (180 / Math.PI);
+                angleDeg = (angleDeg + 360) % 360;
 
-                    console.log(`X: ${x}, Y: ${y}`);
+                const direcao = direcoes.reduce((prev, curr) => {
+                    return Math.abs(curr.angulo - angleDeg) < Math.abs(prev.angulo - angleDeg) ? curr : prev;
+                });
 
-                    const deltaX = x - centerX;
-                    const deltaY = centerY - y;  // inverter porque Y cresce para baixo na tela
-
-                    let angleDeg = Math.atan2(deltaX, deltaY) * (180 / Math.PI);
-                    angleDeg = (angleDeg + 360) % 360;
-
-                    const direcao = getDirecao(angleDeg);
-
-                    seta.style.transform = `translate(-50%, -100%) rotate(${angleDeg}deg)`;
-                    direcaoTexto.textContent = `${direcao.nomeCompleto} (${Math.round(angleDeg)}°)`;
-                }
-
-            });
-    }, 500);  // atualiza a cada meio segundo (mais fluido)
+                seta.style.transform = `translate(-50%, -100%) rotate(${angleDeg}deg)`;
+                direcaoTexto.textContent = `${direcao.nomeCompleto} (${Math.round(angleDeg)}°)`;
+            }
+        });
+}, 50);  // ← Atualiza a cada 50 ms
 </script>
 
 
 </body>
 </html>
-
-
-
-
-
