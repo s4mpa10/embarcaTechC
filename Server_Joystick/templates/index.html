@@ -93,21 +93,13 @@
 
     const direcoes = [
         { nome: "N", nomeCompleto: "Norte", angulo: 0 },
-        { nome: "NNE", nomeCompleto: "Norte-Nordeste", angulo: 22.5 },
         { nome: "NE", nomeCompleto: "Nordeste", angulo: 45 },
-        { nome: "ENE", nomeCompleto: "Este-Nordeste", angulo: 67.5 },
         { nome: "L", nomeCompleto: "Leste", angulo: 90 },
-        { nome: "ESE", nomeCompleto: "Este-Sudeste", angulo: 112.5 },
         { nome: "SE", nomeCompleto: "Sudeste", angulo: 135 },
-        { nome: "SSE", nomeCompleto: "Sul-Sudeste", angulo: 157.5 },
         { nome: "S", nomeCompleto: "Sul", angulo: 180 },
-        { nome: "SSO", nomeCompleto: "Sul-Sudoeste", angulo: 202.5 },
         { nome: "SO", nomeCompleto: "Sudoeste", angulo: 225 },
-        { nome: "OSO", nomeCompleto: "Oeste-Sudoeste", angulo: 247.5 },
         { nome: "O", nomeCompleto: "Oeste", angulo: 270 },
-        { nome: "ONO", nomeCompleto: "Oeste-Noroeste", angulo: 292.5 },
         { nome: "NO", nomeCompleto: "Noroeste", angulo: 315 },
-        { nome: "NNO", nomeCompleto: "Norte-Noroeste", angulo: 337.5 }
     ];
 
     direcoes.forEach(d => {
@@ -140,18 +132,25 @@
                 console.log(`X: ${x}, Y: ${y}`);
 
                 // Calcula o ângulo baseado nos valores lidos
-                const deltaX = x - 2048;
+                const deltaX = -(x - 2048);
                 const deltaY = 2048 - y;  // inverter porque Y cresce pra baixo
-                let angleDeg = Math.atan2(deltaX, deltaY) * (180 / Math.PI);
-                angleDeg = (angleDeg + 360) % 360;
+                const deadzone = 150; // Ajuste conforme necessário
+                if (Math.abs(deltaX) < deadzone && Math.abs(deltaY) < deadzone) {
+                    // Joystick parado → Norte
+                    seta.style.transform = `translate(-50%, -100%) rotate(0deg)`;
+                    direcaoTexto.textContent = `Norte (0°)`;
+                } else {
+                    let angleDeg = Math.atan2(deltaX, deltaY) * (180 / Math.PI);
+                    angleDeg = (angleDeg + 360) % 360;
 
-                const direcao = direcoes.reduce((prev, curr) => {
-                    return Math.abs(curr.angulo - angleDeg) < Math.abs(prev.angulo - angleDeg) ? curr : prev;
-                });
+                    const direcao = direcoes.reduce((prev, curr) => {
+                        return Math.abs(curr.angulo - angleDeg) < Math.abs(prev.angulo - angleDeg) ? curr : prev;
+                    });
 
                 seta.style.transform = `translate(-50%, -100%) rotate(${angleDeg}deg)`;
                 direcaoTexto.textContent = `${direcao.nomeCompleto} (${Math.round(angleDeg)}°)`;
             }
+        }
         });
 }, 50);  // ← Atualiza a cada 50 ms
 </script>
