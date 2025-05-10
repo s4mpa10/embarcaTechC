@@ -50,8 +50,8 @@ target_include_directories(example_lwip_http_util INTERFACE
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(picow_http_client picow_http_client.c )
-set(WIFI_SSID "nome_SSID(rede_wifi)")   
-set(WIFI_PASSWORD "senha_wifi")
+set(WIFI_SSID "Sampaio")   
+set(WIFI_PASSWORD "03113012S")
 target_compile_definitions(picow_http_client PRIVATE
         WIFI_SSID=\"${WIFI_SSID}\"
         WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
@@ -71,7 +71,6 @@ target_link_libraries(picow_http_client
         hardware_adc
         pico_cyw43_arch_lwip_threadsafe_background
         example_lwip_http_util
-        hardware_pwm
         )
 
 # Add the standard include files to the build
@@ -107,7 +106,6 @@ target_link_libraries(picow_http_client_verify
         pico_stdlib
         hardware_gpio
         hardware_adc
-        hardware_pwm
         )
 pico_add_extra_outputs(picow_http_client_verify)
 
