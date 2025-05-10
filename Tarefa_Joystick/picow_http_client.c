@@ -5,7 +5,6 @@
 #include "pico/async_context.h"
 #include "lwip/altcp_tls.h"
 #include "example_http_client_util.h"
-#include "hardware/pwm.h" // Biblioteca para controle de PWM no RP2040
 #include "hardware/adc.h" // Biblioteca para manipulação do ADC no RP2040
 
 // ======= CONFIGURAÇÕES ======= //
@@ -18,9 +17,6 @@ const int VRX = 26;          // Pino do eixo X do joystick (ADC)
 const int VRY = 27;          // Pino do eixo Y do joystick (ADC)
 const int ADC_CHANNEL_0 = 0; // Canal ADC para o eixo X
 const int ADC_CHANNEL_1 = 1; // Canal ADC para o eixo Y
-const int SW = 22;           // Pino de leitura do botão do joystick
-const float DIVIDER_PWM = 16.0;          // Divisor fracional do clock para o PWM
-const uint16_t PERIOD = 4096;            // Período do PWM (valor máximo do contador)
 // ============================ //
 
 
@@ -31,9 +27,6 @@ void setup_joystick()
   adc_init();                       // Inicializa o módulo ADC
   adc_gpio_init(VRX);               // Configura o pino VRX (eixo X) para entrada ADC
   adc_gpio_init(VRY);               // Configura o pino VRY (eixo Y) para entrada ADC
-  gpio_init(SW);                    // Inicializa o pino do botão
-  gpio_set_dir(SW, GPIO_IN);        // Configura o pino do botão como entrada
-  gpio_pull_up(SW);                 // Ativa o pull-up no pino do botão para evitar flutuações
 }
 
 // Função de configuração geral
@@ -52,10 +45,10 @@ void joystick_read_axis(uint16_t *vrx_value, uint16_t *vry_value) {
     adc_select_input(ADC_CHANNEL_1); // Seleciona o canal ADC para o eixo Y
     sleep_us(2);                     // Pequeno delay para estabilidade
     *vrx_value = 4095 - adc_read();  // Lê valor e inverte para eixo Y
-  }
+}
 
 
-void enviar_requisicao_http(const char *url) {
+void enviar_requisicao_http(const char *url, int counter) {
     EXAMPLE_HTTP_REQUEST_T req = {0};
     req.hostname = HOST;
     req.url = url;
@@ -63,7 +56,7 @@ void enviar_requisicao_http(const char *url) {
     req.headers_fn = http_client_header_print_fn;
     req.recv_fn = http_client_receive_print_fn;
 
-    printf("[%d] Enviando: %s\n", url);
+    printf("[%d] Enviando: %s\n", counter, url);
     int result = http_client_request_sync(cyw43_arch_async_context(), &req);
 
     if (result == 0) {
@@ -76,7 +69,6 @@ void enviar_requisicao_http(const char *url) {
 
 // Função principal
 int main() {
-    stdio_init_all();       // Inicializa comunicação serial
 
     printf("\nIniciando cliente HTTP...\n");
 
@@ -95,9 +87,8 @@ int main() {
 
     int counter = 0;        // Contador de requisições
     char url[128];          // Buffer para armazenar a URL
-    absolute_time_t last_debounce_time = get_absolute_time();       // Marca tempo para debounce
 
-    uint16_t vrx_value, vry_value, sw_value; // Variáveis para armazenar os valores do joystick (eixos X e Y) e botão
+    uint16_t vrx_value, vry_value; // Variáveis para armazenar os valores do joystick (eixos X e Y) e botão
     setup();                                 // Chama a função de configuração do joystick e serial
     
     printf("Joystick-PWM\n");                // Exibe uma mensagem inicial via porta serial
@@ -109,9 +100,11 @@ int main() {
 
         sprintf(url, "/mensagem?msgA=%d&msgB=%d", vrx_value, vry_value);  // Monta URL da requisição para o servidor
         
-        enviar_requisicao_http(url); // Envia a requisição HTTP com os valores do joystick
+        enviar_requisicao_http(url, counter); // Envia a requisição HTTP com os valores do joystick
 
         sleep_ms(100); // Aguarda 100ms antes de enviar a próxima requisição
+        counter++;                      // Incrementa contador de mensagens 
+
     }
       
     return 0; // Nunca chegará aqui devido ao while(1)

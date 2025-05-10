@@ -195,10 +195,6 @@ int main() {
 
         sleep_ms(INTERVALO_MS);         // Aguarda próximo loop, esperando 1 segundo
         counter++;                      // Incrementa contador de mensagens 
-        if (counter > 1000) {           // Reseta contador após 1000 mensagens
-            printf("Contador resetado\n");
-            counter = 0;
-        }
     }
 
     return 0; // Nunca atinge este ponto
