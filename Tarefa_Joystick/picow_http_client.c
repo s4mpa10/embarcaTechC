@@ -8,15 +8,15 @@
 #include "hardware/adc.h" // Biblioteca para manipulação do ADC no RP2040
 
 // ======= CONFIGURAÇÕES ======= //
-#define HOST "192.168.18.93"     // IP do servidor para envio das requisições
+#define HOST "XXX.XXX.XX.XX"     // IP do servidor para envio das requisições
 #define PORT 5000                // Porta do servidor
 #define DEBOUNCE_MS 50           // Tempo de debounce em milissegundos
 
 // Definição dos pinos usados para o joystick 
 const int VRX = 26;          // Pino do eixo X do joystick (ADC)
 const int VRY = 27;          // Pino do eixo Y do joystick (ADC)
-const int ADC_CHANNEL_1 = 1; // Canal ADC para o eixo X
-const int ADC_CHANNEL_0 = 0; // Canal ADC para o eixo Y
+const int ADC_CHANNEL_0 = 0; // Canal ADC para o eixo X
+const int ADC_CHANNEL_1 = 1; // Canal ADC para o eixo Y
 // ============================ //
 
 
@@ -37,14 +37,14 @@ void setup() {
 
 void joystick_read_axis(uint16_t *vrx_value, uint16_t *vry_value) {
     // Leitura do valor do eixo X do joystick
-    adc_select_input(ADC_CHANNEL_1); // Seleciona o canal ADC para o eixo X
+    adc_select_input(ADC_CHANNEL_0); // Seleciona o canal ADC para o eixo X
     sleep_us(2);                     // Pequeno delay para estabilidade
-    *vrx_value = 4095 - adc_read();  // Lê valor e inverte para eixo X
+    *vry_value = 4095 - adc_read();  // Lê valor e inverte para eixo X
   
     // Leitura do valor do eixo Y do joystick
-    adc_select_input(ADC_CHANNEL_0); // Seleciona o canal ADC para o eixo Y
+    adc_select_input(ADC_CHANNEL_1); // Seleciona o canal ADC para o eixo Y
     sleep_us(2);                     // Pequeno delay para estabilidade
-    *vry_value = 4095 - adc_read();  // Lê valor e inverte para eixo Y
+    *vrx_value = 4095 - adc_read();  // Lê valor e inverte para eixo Y
 }
 
 
