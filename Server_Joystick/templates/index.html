@@ -64,6 +64,17 @@
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.1);
     }
+    .circulo-verde {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        background: limegreen;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 8px limegreen;
+    }
 
 </style>
 </head>
@@ -106,12 +117,10 @@
         rosa.appendChild(label);
     });
 
-    // Atualiza a direção a cada 50 ms consultando o servidor
     setInterval(() => {
-    fetch('/get_messages') // Faz uma requisição ao backend para obter os dados
+    fetch('/get_messages')
         .then(response => response.json())
         .then(data => {
-            // Expressão regular para extrair X e Y da última mensagem válida
             const regex = /\[(.*?)\] X - (\d+) Y - (\d+)/;
             const ultimaMensagemValida = data.slice().reverse().find(msg => regex.test(msg));
 
@@ -122,37 +131,28 @@
 
                 console.log(`X: ${x}, Y: ${y}`);
 
-                // Calcula deslocamento a partir do centro (2048,2048)
-                // Calcula a diferença entre o valor atual do eixo X e o centro (2048)
-                // O sinal negativo em deltaX inverte o eixo para alinhar com a orientação esperada (sentido horário)
+                // Calcula o ângulo baseado nos valores lidos
                 const deltaX = -(x - 2048);
-
-                // Calcula a diferença entre o valor atual do eixo Y e o centro (2048)
-                // Subtrai y de 2048 para inverter o eixo Y, porque no sistema gráfico Y cresce para baixo, mas no cálculo trigonométrico convencional (plano cartesiano) Y cresce para cima
-                const deltaY = 2048 - y; 
-
-                const deadzone = 150; // Zona morta para ignorar pequenas variações
+                const deltaY = 2048 - y;  // inverter porque Y cresce pra baixo
+                const deadzone = 150; // Ajuste conforme necessário
                 if (Math.abs(deltaX) < deadzone && Math.abs(deltaY) < deadzone) {
-                    // Se joystick estiver parado, mostra Norte
+                    // Joystick parado → Norte
                     seta.style.transform = `translate(-50%, -100%) rotate(0deg)`;
                     direcaoTexto.textContent = `Norte (0°)`;
                 } else {
-                    // Calcula o ângulo em graus a partir de deltaX e deltaY
                     let angleDeg = Math.atan2(deltaX, deltaY) * (180 / Math.PI);
                     angleDeg = (angleDeg + 360) % 360;
 
-                    // Determina a direção mais próxima
                     const direcao = direcoes.reduce((prev, curr) => {
                         return Math.abs(curr.angulo - angleDeg) < Math.abs(prev.angulo - angleDeg) ? curr : prev;
                     });
-                    
-                // Atualiza a seta e o texto com a direção atual
+
                 seta.style.transform = `translate(-50%, -100%) rotate(${angleDeg}deg)`;
                 direcaoTexto.textContent = `${direcao.nomeCompleto} (${Math.round(angleDeg)}°)`;
             }
         }
         });
-}, 50);  // Atualiza a cada 50 ms
+}, 50);  // ← Atualiza a cada 50 ms
 </script>
 
 
