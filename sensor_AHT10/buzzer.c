@@ -1,14 +1,15 @@
-/**
- * @file buzzer.c
- * @brief Implementação do driver para controle de buzzer via PWM
- * @author Seu Nome
- * @date 06/12/2024
- */
-
 #include "buzzer.h"
 #include "hardware/clocks.h"
+#include "ledRGB.h"
 
-void buzzer_init(uint pin, uint frequency) {
+// Definições de pinos e parâmetros
+#define BUZZER_PIN 21
+#define DEFAULT_BUZZER_FREQUENCY 1000  // Hz
+#define DEFAULT_BEEP_DURATION_MS 500   // ms
+#define DEFAULT_PAUSE_DURATION_MS 100  // ms
+
+
+void buzzer_init(uint pin) {
     // Configurar o pino como saída de PWM
     gpio_set_function(pin, GPIO_FUNC_PWM);
 
@@ -17,6 +18,7 @@ void buzzer_init(uint pin, uint frequency) {
 
     // Calcular o divisor de clock para a frequência desejada
     // O counter do PWM roda a clock_sys / (divisor * 256)
+    uint frequency = DEFAULT_BUZZER_FREQUENCY;
     float divisor = (float)clock_get_hz(clk_sys) / (frequency * 4096);
 
     // Configurar o PWM
@@ -40,19 +42,16 @@ void buzzer_beep(uint pin, uint duration_ms, uint8_t duty_cycle) {
     // Manter o beep pelo tempo especificado
     sleep_ms(duration_ms);
 
+    //Ligando o LED
+    ledrgb_on(LED_RED_PIN);
+
     // Desligar o buzzer
     buzzer_stop(pin);
+
+    sleep_ms(DEFAULT_PAUSE_DURATION_MS); // Pausa de 100ms
 }
 
 void buzzer_stop(uint pin) {
     pwm_set_gpio_level(pin, 0);
 }
 
-void buzzer_play_sequence(uint pin, const uint beeps[], const uint pauses[], uint count, uint8_t duty_cycle) {
-    for (uint i = 0; i < count; i++) {
-        buzzer_beep(pin, beeps[i], duty_cycle);
-        if (i < count - 1) {
-            sleep_ms(pauses[i]);
-        }
-    }
-}

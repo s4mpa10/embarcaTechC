@@ -28,43 +28,36 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(sensor_bh1750 C CXX ASM)
+project(buzzer C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(sensor_bh1750 
-            sensor_bh1750.c 
-            inc/ssd1306_i2c.c
-            bh1750.c
-            rgb_led.c
-            display.c)
+add_executable(buzzer buzzer.c )
 
-pico_set_program_name(sensor_bh1750 "sensor_bh1750")
-pico_set_program_version(sensor_bh1750 "0.1")
+pico_set_program_name(buzzer "buzzer")
+pico_set_program_version(buzzer "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(sensor_bh1750 0)
-pico_enable_stdio_usb(sensor_bh1750 1)
+pico_enable_stdio_uart(buzzer 0)
+pico_enable_stdio_usb(buzzer 1)
 
 # Add the standard library to the build
-target_link_libraries(sensor_bh1750
+target_link_libraries(buzzer
         pico_stdlib
-        hardware_pwm
-        hardware_adc
-        )
+        hardware_pwm)
 
 # Add the standard include files to the build
-target_include_directories(sensor_bh1750 PRIVATE
+target_include_directories(buzzer PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(sensor_bh1750 
-        hardware_i2c
+target_link_libraries(buzzer 
+        pico_cyw43_arch_none
         )
 
-pico_add_extra_outputs(sensor_bh1750)
+pico_add_extra_outputs(buzzer)
 

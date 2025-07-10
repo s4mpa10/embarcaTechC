@@ -41,6 +41,7 @@ add_executable(sensor_AHT10
         aht10.c
         oled_display.c
         buzzer.c
+        ledRGB.c
 )
 
 pico_set_program_name(sensor_AHT10 "sensor_AHT10")
@@ -63,7 +64,6 @@ target_include_directories(sensor_AHT10 PRIVATE
 # Add any user requested libraries
 target_link_libraries(sensor_AHT10 
         hardware_i2c
-
         )
 
 pico_add_extra_outputs(sensor_AHT10)
